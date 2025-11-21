@@ -1,14 +1,15 @@
-name: Build and Push Docker Image
+name: Build huggingface Image
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, hug ] 
     paths:
       - 'Dockerfile'
       - 'index.js'
       - 'package.json'
+      - 'index.html'
   pull_request:
-    branches: [ main ]
+    branches: [ main, hug ]
   workflow_dispatch:
 
 jobs:
@@ -21,16 +22,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # ⬇️ 【新增：轉換為小寫的擁有者名稱】
+      
+      # 1. 修正大寫錯誤：將 ${{ github.repository_owner }} 轉換為小寫
       - name: Set lowercase repository owner
         id: owner_lc
         run: |
-          # 轉換為小寫並存入環境變數 OWNER_LC
           LOWERCASE_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "OWNER_LC=$LOWERCASE_OWNER" >> $GITHUB_ENV 
-      # ⬆️ 【新增結束】
-
+      
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -46,13 +45,12 @@ jobs:
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64
+          # 2. 最終修正：只保留有效標籤，刪除所有註釋行
           tags: |
-            # 🎯 已修改：使用小寫環境變數 ${{ env.OWNER_LC }}
-            ghcr.io/${{ env.OWNER_LC }}/ws:latest
+            ghcr.io/${{ env.OWNER_LC }}/huoli:latest
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.description=HTTP Server
+            org.opencontainers.image.description=http server
             org.opencontainers.image.licenses=MIT
           cache-from: type=gha
           cache-to: type=gha,mode=max
