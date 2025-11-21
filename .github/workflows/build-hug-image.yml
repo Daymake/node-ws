@@ -2,7 +2,7 @@ name: Build huggingface Image
 
 on:
   push:
-    # 🚨 關鍵修改 1：讓它在 main 分支上也能被推動
+    # 修正分支觸發器，確保 main 和 hug 分支都能觸發
     branches: [ main, hug ] 
     paths:
       - 'Dockerfile'
@@ -23,17 +23,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        # ⚠️ 這裡要移除 'ref: hug'，或者改為 ${{ github.ref_name }} 以適應 main/hug 分支
-        # 如果您使用 ref: hug，但運行在 main 上會出錯。
-        # 建議直接刪除 with: 區塊，讓它默認 checkout 當前分支
-        # with:
-        #   ref: hug 
       
-      # 🛠️ 新增：將 ${{ github.repository_owner }} 轉換為小寫
+      # 1. 修正大寫錯誤：將 ${{ github.repository_owner }} 轉換為小寫
       - name: Set lowercase repository owner
         id: owner_lc
         run: |
-          # 轉換為小寫並存入環境變數 OWNER_LC
           LOWERCASE_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "OWNER_LC=$LOWERCASE_OWNER" >> $GITHUB_ENV 
       
@@ -53,7 +47,7 @@ jobs:
           context: .
           push: true
           tags: |
-            # 🎯 關鍵修改 2：使用小寫環境變數 ${{ env.OWNER_LC }}
+            # 2. 使用小寫環境變數，並移除所有註釋
             ghcr.io/${{ env.OWNER_LC }}/huoli:latest
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
