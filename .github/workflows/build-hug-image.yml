@@ -2,7 +2,6 @@ name: Build huggingface Image
 
 on:
   push:
-    # 修正分支觸發器，確保 main 和 hug 分支都能觸發
     branches: [ main, hug ] 
     paths:
       - 'Dockerfile'
@@ -46,8 +45,8 @@ jobs:
         with:
           context: .
           push: true
+          # 2. 最終修正：只保留有效標籤，刪除所有註釋行
           tags: |
-            # 2. 使用小寫環境變數，並移除所有註釋
             ghcr.io/${{ env.OWNER_LC }}/huoli:latest
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
