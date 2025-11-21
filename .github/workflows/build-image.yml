@@ -22,6 +22,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ⬇️ 【新增：轉換為小寫的擁有者名稱】
+      - name: Set lowercase repository owner
+        id: owner_lc
+        run: |
+          # 轉換為小寫並存入環境變數 OWNER_LC
+          LOWERCASE_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "OWNER_LC=$LOWERCASE_OWNER" >> $GITHUB_ENV 
+      # ⬆️ 【新增結束】
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -39,7 +48,8 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ github.repository_owner }}/ws:latest
+            # 🎯 已修改：使用小寫環境變數 ${{ env.OWNER_LC }}
+            ghcr.io/${{ env.OWNER_LC }}/ws:latest
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.description=HTTP Server
